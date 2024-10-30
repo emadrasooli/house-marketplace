@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { db } from "../firebase.config"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
@@ -65,7 +66,7 @@ function CreateListing() {
     }, [isMounted])
 
 
-    const onSubmit = e => {
+    const onSubmit = async (e) => {
         e.preventDefault()
         
         setLoading(true)
@@ -106,18 +107,38 @@ function CreateListing() {
                       }
                     }, 
                     (error) => {
-                      // Handle unsuccessful uploads
+                      reject(error)
                     }, 
                     () => {
-                      // Handle successful uploads on complete
-                      // For instance, get the download URL: https://firebasestorage.googleapis.com/...
                       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        console.log('File available at', downloadURL);
+                        resolve(downloadURL);
                       });
                     }
                   );
             })
         }
+
+        const imageUrls = await Promise.all(
+          [...images].map((image) => storeImage(image))
+        ).catch(() => {
+          setLoading(false)
+          toast.error('Images not uploaded')
+          return
+        })
+
+        const formDataCopy = {
+          ...formData,
+          imageUrls,
+          timestamp: serverTimestamp()
+        }
+
+        delete formDataCopy.images
+        !formDataCopy.offer && delete formDataCopy.discountedPrice
+
+        const docRef = await addDoc(collection(db, 'listings'), formDataCopy)
+        setLoading(false)
+        toast.success('Listing saved')
+        navigate(`/category/${formDataCopy.type}/${docRef.id}`)
 
         setLoading(false)
     }
