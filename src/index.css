@@ -81,8 +81,8 @@ button {
 .editIcon {
   cursor: pointer;
   position: absolute;
-  top: -3.4%;
-  right: 20px;
+  top: 20%;
+  right: -8px;
 }
 
 .pageContainer,
@@ -706,7 +706,7 @@ button {
   font-weight: 600;
 }
 
-.lisitingsList {
+.listingsList {
   padding: 0;
 }
 

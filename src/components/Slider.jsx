@@ -58,6 +58,7 @@ function Slider() {
                 style={{
                   background: `url(${data.imageUrls[0]}) center no-repeat`,
                   backgroundSize: 'cover',
+                  borderRadius: '16px',
                 }}
                 className='swiperSlideDiv'
               >

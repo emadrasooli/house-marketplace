@@ -4,12 +4,13 @@ import { updateDoc, doc, collection, getDocs, query, where, orderBy, deleteDoc }
 import {db} from '../firebase.config'
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import ListingItem from '../components/ListingItem'
 import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg'
 import homeIcon from '../assets/svg/homeIcon.svg'
 
 function Profile() {
   const auth = getAuth();
-  const [laoding, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [listings, setListings] = useState(null)
   const [changeDetails, setChangeDetails] = useState(false)
   const [formData, setFormData] = useState({
@@ -80,6 +81,18 @@ function Profile() {
     }))
   }
 
+  const onDelete = async (listingId) => {
+    if(window.confirm('Are you sure you want to delete')) {
+      await deleteDoc(doc(db, 'listings', listingId))
+
+      const updataedListings = listings.filter((listing) => listing.id !== listingId)
+      setListings(updataedListings)
+      toast.success('Successfully deleted listing')
+    }
+  }
+
+  const onEdit = (listingId) => navigate(`/edit-listing/${listingId}`)
+
   return <div className="profile">
     <header className="profileHeader">
       <p className="pageHeader">My Profile</p>
@@ -112,6 +125,18 @@ function Profile() {
         <p>Sell or rent your home</p>
         <img src={arrowRight} alt="arrow right" />
       </Link>
+
+      {!loading && listings?.length > 0 && (
+        <>
+          <p className="listingText">Your Listings</p>
+          <ul className="listingsList">
+            {listings.map((listing) => (
+              <ListingItem key={listing.id} listing={listing.data} id={listing.id} 
+              onDelete={() => onDelete(listing.id)} onEdit={() => onEdit(listing.id)}/>
+            ))}
+          </ul>
+        </>
+      )}
     </main>
   </div>;
 }
